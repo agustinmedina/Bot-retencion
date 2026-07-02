@@ -1,0 +1,14 @@
+server {
+    listen ${PORT};
+    server_name _;
+    root /usr/share/nginx/html;
+    index index.html;
+
+    location / {
+        # Necesario para el enrutamiento de Angular (SPA)
+        try_files $uri $uri/ /index.html;
+    }
+
+    gzip on;
+    gzip_types text/plain text/css application/javascript application/json;
+}
