@@ -1,0 +1,59 @@
+/* Estilos Globales de la Plataforma de Auditoría */
+
+:root {
+  /* Paleta de Colores de AgroSaaS */
+  --bg-primary: #0a0b0d;
+  --bg-secondary: #12141c;
+  --bg-card: #181a24;
+  --border-color: #242836;
+  --text-primary: #f1f3f9;
+  --text-secondary: #8e95a5;
+  --text-muted: #5a6072;
+
+  --accent-color: #4f46e5;
+  --accent-hover: #4338ca;
+  --success: #10b981;
+  --error: #ef4444;
+  --warning: #f59e0b;
+  --info: #3b82f6;
+
+  /* Categorías de Clústeres */
+  --cluster-precio: #3b82f6;
+  --cluster-competidor: #ec4899;
+  --cluster-insatisfaccion: #f59e0b;
+  --cluster-soporte: #10b981;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+body {
+  font-family: 'Outfit', sans-serif;
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  line-height: 1.5;
+  overflow-x: hidden;
+  -webkit-font-smoothing: antialiased;
+}
+
+/* Scrollbar personalizado */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-secondary);
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--border-color);
+  border-radius: 4px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--text-muted);
+}

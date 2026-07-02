@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ConversaAI Analytics - Panel de Control</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        // Configuración personalizada para extender colores o estilos si fuera necesario
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        slate: {
+                            850: '#1e293b/80',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        /* Ajuste de scrollbar ergonómico para el contenedor del chat */
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: #020617;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 2px;
+        }
+    </style>
+</head>
+<body class="bg-slate-950 text-slate-100 min-h-screen flex flex-col font-sans antialiased selection:bg-indigo-500 selection:text-white">
+
+    <header class="border-b border-slate-800 bg-slate-900/80 backdrop-blur sticky top-0 z-40 px-6 py-4 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div class="flex items-center gap-3">
+            <div class="bg-indigo-600 p-2.5 rounded-xl shadow-lg shadow-indigo-500/20">
+                <svg class="w-6 h-6 text-indigo-100" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9.813 15.904L9 21L7.188 15.904L2 15L7.188 14.096L9 9L10.813 14.096L16 15L9.813 15.904Z"/><path stroke-linecap="round" stroke-linejoin="round" d="M19.071 4.929L18.5 7L16.429 6.429L18.5 5.857L19.071 3.786L19.643 5.857L21.714 6.429L19.643 7L19.071 4.929Z"/></svg>
+            </div>
+            <div>
+                <div class="flex items-center gap-2">
+                    <h1 class="font-bold text-lg tracking-tight">ConversaAI Analytics</h1>
+                    <span class="text-[10px] uppercase font-bold bg-indigo-500/15 text-indigo-400 px-2 py-0.5 rounded-full border border-indigo-500/30">Vanilla v1.0</span>
+                </div>
+                <p class="text-xs text-slate-400">Observabilidad de Sentimiento, Intención y Puntos de Quiebre Conversacional</p>
+            </div>
+        </div>
+
+        <div class="flex items-center bg-slate-950 border border-slate-800 rounded-xl p-1 gap-1 w-full md:w-auto">
+            <button id="btn-role-product" onclick="setRole('product')" class="flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all bg-indigo-600 text-white shadow">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+                Equipo de Producto (UX)
+            </button>
+            <button id="btn-role-analyst" onclick="setRole('analyst')" class="flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all text-slate-400 hover:text-slate-200">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 7v10c0 2.21 3.582 4 8 4s8-1.79 8-4V7M4 7c0 2.21 3.582 4 8 4s8-1.79 8-4M4 7c0-2.21 3.582-4 8-4s8 1.79 8 4m0 5c0 2.21-3.582 4-8 4s-8-1.79-8-4"/></svg>
+                Analista de Datos (MLOps)
+            </button>
+        </div>
+    </header>
+
+    <div class="flex flex-1 flex-col md:flex-row">
+        
+        <aside class="w-full md:w-64 border-b md:border-b-0 md:border-r border-slate-800 bg-slate-900/30 p-4 flex flex-col justify-between gap-6">
+            <div class="space-y-6">
+                <div>
+                    <p class="text-[10px] uppercase font-bold text-slate-500 tracking-wider mb-2 px-2">Vistas de Análisis</p>
+                    <nav class="space-y-1">
+                        <button onclick="switchTab('dashboard')" id="tab-dashboard" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors bg-slate-800 text-white border-l-2 border-indigo-500">
+                            <svg class="w-4 h-4 text-indigo-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 002 2h2a2 2 0 002-2z"/></svg>
+                            Métricas de Negocio
+                        </button>
+                        <button onclick="switchTab('explorer')" id="tab-explorer" class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-slate-400 hover:bg-slate-800/50 hover:text-white">
+                            <svg class="w-4 h-4 text-sky-400" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+                            Explorador de Fricción
+                        </button>
+                    </nav>
+                </div>
+
+                <div id="panel-control-analyst" class="hidden bg-indigo-950/20 border border-indigo-500/20 rounded-xl p-3 space-y-2">
+                    <p class="text-xs font-semibold text-indigo-400 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"/></svg>
+                        MLOps Controles
+                    </p>
+                    <p class="text-[10px] text-indigo-300/80 leading-relaxed">Ajusta el umbral de filtrado matemático para reclamos bilingües en el sector ganadero.</p>
+                    <div class="space-y-1">
+                        <div class="flex justify-between text-[11px]">
+                          <span class="text-slate-400">Confianza Mínima:</span>
+                          <span class="font-bold text-indigo-300">75%</span>
+                        </div>
+                        <input type="range" min="50" max="95" value="75" class="w-full h-1 bg-slate-800 rounded-lg appearance-none cursor-pointer accent-indigo-500">
+                    </div>
+                </div>
+
+                <div id="panel-control-product" class="bg-sky-950/20 border border-sky-500/20 rounded-xl p-3">
+                    <p class="text-xs font-semibold text-sky-400 flex items-center gap-1.5">
+                        <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+                        Métricas de Retención
+                    </p>
+                    <p class="text-[10px] text-sky-300/80 leading-relaxed mt-1">El cobro extra por consumo de datos de aretes causa el 45% de cancelaciones directas en el backend de ganado.</p>
+                </div>
+            </div>
+
+            <div class="border-t border-slate-800 pt-4 space-y-2 text-xs">
+                <div class="flex items-center justify-between text-slate-400">
+                    <span>Registros Totales:</span>
+                    <span id="records-counter" class="font-bold text-slate-200">2,450,890</span>
+                </div>
+                <div class="flex items-center justify-between text-slate-400">
+                    <span>Estado Pipeline:</span>
+                    <span class="flex items-center gap-1 text-emerald-400 font-medium">
+                        <span class="w-1.5 h-1.5 bg-emerald-400 rounded-full animate-ping"></span>
+                        Activo
+                    </span>
+                </div>
+            </div>
+        </aside>
+
+        <main class="flex-1 p-6 space-y-6 overflow-y-auto">
+            
+            <div id="banner-rol" class="p-4 rounded-2xl border bg-slate-900 border-slate-800 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors">
+                <div>
+                    <span id="badge-rol" class="text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400">
+                        Perfil: Diseñador de Conversaciones & Producto
+                    </span>
+                    <h2 id="title-rol" class="text-base font-bold mt-1 text-slate-100">
+                        Fricción de Flujos Conversacionales, Reducción de Abandono y Despacho MCP
+                    </h2>
+                    <p id="desc-rol" class="text-xs text-slate-400">
+                        Identifica qué flujos del bot rompen la retención, inspecciona las sesiones críticas y aprueba el envío de correcciones.
+                    </p>
+                </div>
+                <div id="action-analyst-container" class="hidden flex-shrink-0">
+                    <button onclick="simulateUpload()" class="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold rounded-xl text-white shadow-lg shadow-indigo-500/25 transition-all">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                        Cargar Corpus Mensual
+                    </button>
+                </div>
+            </div>
+
+            <div id="view-dashboard" class="space-y-6">
+                
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-indigo-500"></div>
+                        <p class="text-xs text-slate-400">Volumen Mensual Corpus</p>
+                        <p id="card-volume" class="text-2xl font-bold mt-1">2,450,890</p>
+                        <span class="text-[10px] text-emerald-400 font-medium flex items-center gap-1 mt-2">
+                            +8.3% vs mes anterior
+                        </span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-rose-500"></div>
+                        <p class="text-xs text-slate-400">Tasa de Frustración Crítica</p>
+                        <p class="text-2xl font-bold mt-1">14.2%</p>
+                        <span class="text-[10px] text-rose-400 font-medium flex items-center gap-1 mt-2">
+                            Concentrado en reclamo_tarifas
+                        </span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-emerald-500"></div>
+                        <p class="text-xs text-slate-400">Resolución del Bot (NLP)</p>
+                        <p class="text-2xl font-bold mt-1">68.4%</p>
+                        <span class="text-[10px] text-slate-500 font-medium flex items-center gap-1 mt-2">
+                            Meta de ingeniería: 75%
+                        </span>
+                    </div>
+                    <div class="bg-slate-900 border border-slate-800 p-4 rounded-2xl relative overflow-hidden">
+                        <div class="absolute top-0 left-0 w-1 h-full bg-amber-500"></div>
+                        <p class="text-xs text-slate-400">Abandono en Bucles de Error</p>
+                        <p class="text-2xl font-bold mt-1">17.9%</p>
+                        <span class="text-[10px] text-amber-400 font-medium flex items-center gap-1 mt-2">
+                            Usuarios atrapados en fallback
+                        </span>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <div class="lg:col-span-2 bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h3 class="font-bold text-sm">Top Intenciones con Mayor Quiebre Emocional</h3>
+                            <p class="text-xs text-slate-400">Cruce analítico de intents vs sentimiento negativo sistemático</p>
+                        </div>
+                        <div class="space-y-4">
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs">
+                                    <span class="font-semibold text-slate-200">price_complaint (Cargos extra por datos de aretes)</span>
+                                    <span class="text-rose-400 font-bold">42.8% de frustración</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-rose-500 h-full" style="width: 42.8%"></div>
+                                </div>
+                            </div>
+                            <div class="space-y-1">
+                                <div class="flex justify-between text-xs">
+                                    <span class="font-semibold text-slate-200">service_issue (Pérdida de sincronización de antenas LoRa)</span>
+                                    <span class="text-rose-400 font-bold">38.2% de frustración</span>
+                                </div>
+                                <div class="w-full bg-slate-800 h-2 rounded-full overflow-hidden">
+                                    <div class="bg-rose-500 h-full" style="width: 38.2%"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-slate-900 border border-slate-800 rounded-2xl p-5 space-y-4">
+                        <div class="border-b border-slate-800 pb-2">
+                            <h3 class="font-bold text-sm">Salud del Corpus Bilingüe</h3>
+                        </div>
+                        <div class="space-y-3 text-xs">
+                            <div>
+                                <p class="text-slate-400 mb-1">Distribución Lingüística Detectada</p>
+                                <div class="flex w-full h-3 rounded-full overflow-hidden text-[9px] font-bold text-center">
+                                    <div class="bg-indigo-600 h-full flex items-center justify-center" style="width: 58%">ES 58%</div>
+                                    <div class="bg-sky-500 h-full flex items-center justify-center" style="width: 35%">PT 35%</div>
+                                    <div class="bg-slate-700 h-full flex items-center justify-center" style="width: 7%">P* 7%</div>
+                                </div>
+                                <p class="text-[9px] text-slate-500 mt-1">*P: Frontera agrícola reporta uso de "Portuñol".</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="view-explorer" class="hidden space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+                    
+                    <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-4 space-y-3">
+                        <h3 class="font-bold text-sm border-b border-slate-800 pb-2">Cola de Sesiones Críticas</h3>
+                        <div class="space-y-2">
+                            <div class="p-3 bg-indigo-950/20 border border-indigo-500/60 rounded-xl text-xs flex flex-col gap-1 cursor-pointer">
+                                <div class="flex justify-between font-bold text-slate-200">
+                                    <span>Rancho San Martín (AR)</span>
+                                    <span class="text-rose-400 bg-rose-500/10 px-1.5 rounded text-[9px]">ABANDONADO</span>
+                                </div>
+                                <p class="text-[10px] text-slate-400">Fricción temporal calculada: 71%</p>
+                                <span class="text-[10px] text-slate-500 italic mt-1">Motivo: price_complaint</span>
+                            </div>
+                            <div class="p-3 bg-slate-950 border border-slate-800 rounded-xl text-xs flex flex-col gap-1 opacity-60 hover:opacity-100 transition-opacity cursor-not-allowed">
+                                <div class="flex justify-between font-bold text-slate-200">
+                                    <span>Fazenda Rio Grande (BR)</span>
+                                    <span class="text-amber-400 bg-amber-500/10 px-1.5 rounded text-[9px]">ESCALADO</span>
+                                </div>
+                                <p class="text-[10px] text-slate-400">Fricción temporal calculada: 82%</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-[500px]">
+                        <div class="border-b border-slate-800 pb-2 mb-3">
+                            <h4 class="font-bold text-sm">Línea de Tiempo del Chat</h4>
+                            <p class="text-[10px] text-indigo-400">Rancho San Martín — Ganado Enterprise</p>
+                        </div>
+                        <div class="flex-1 overflow-y-auto space-y-3 pr-1 custom-scrollbar text-xs">
+                            <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl max-w-[90%]">
+                                <span class="text-[9px] font-bold text-indigo-400 block uppercase">Asistente AI</span>
+                                <p class="text-slate-200 mt-0.5">Hola. ¿En qué puedo ayudarte hoy con tu suscripción de Ganado SaaS?</p>
+                            </div>
+                            <div class="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl max-w-[90%] ml-auto">
+                                <span class="text-[9px] font-bold text-slate-300 block uppercase text-right">Cliente</span>
+                                <p class="text-slate-200 mt-0.5 text-right">Me llegó una factura con un cobro extra de 12.45 dólares. Tengo el plan Enterprise, todo debería estar cubierto.</p>
+                            </div>
+                            <div class="p-3 bg-slate-900 border border-slate-800 rounded-xl max-w-[90%]">
+                                <span class="text-[9px] font-bold text-indigo-400 block uppercase">Asistente AI</span>
+                                <p class="text-slate-200 mt-0.5">El plan Enterprise incluye hasta 15 GB de datos de sensores. Veo que consumiste 16.5 GB de telemetría este mes.</p>
+                            </div>
+                            <div class="p-3 bg-indigo-950/40 border border-indigo-500/30 rounded-xl max-w-[90%] ml-auto">
+                                <span class="text-[9px] font-bold text-slate-300 block uppercase text-right">Cliente</span>
+                                <p class="text-slate-200 mt-0.5 text-right">¡Nadie me avisó que los aretes de las vacas gastaban datos extra! Es un robo, cancela mi suscripción ahora mismo.</p>
+                                <div class="pt-1 border-t border-slate-800/60 mt-1.5 flex justify-between items-center text-[9px]">
+                                    <span class="text-slate-400">NLP Sentiment:</span>
+                                    <span class="text-rose-400 font-bold bg-rose-500/10 px-1 rounded">⚠️ FRUSTRACIÓN CRÍTICA</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="lg:col-span-4 bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col h-[500px] justify-between">
+                        <div class="space-y-4">
+                            <div class="border-b border-slate-800 pb-2">
+                                <h4 class="font-bold text-sm flex items-center gap-1.5">
+                                    Orquestador MCP
+                                </h4>
+                                <p class="text-[10px] text-slate-400">Contexto enriquecido estructurado automáticamente para ingenieros de producto</p>
+                            </div>
+                            <div class="space-y-3 text-xs">
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Título del Ticket Despachado</label>
+                                    <input type="text" id="mcp-title" value="[ConversaAI-Fricción] Quiebre en Flujo: Objeción de Cargos Extra por Aretes" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Canal de Destino (MCP Tool)</label>
+                                    <select class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 focus:outline-none focus:border-indigo-500">
+                                        <option>Jira Software — Backlog de Sprint</option>
+                                        <option>Slack — #alertas-conversas-ai</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label class="block text-[10px] font-bold uppercase text-slate-400 mb-1">Borrador del Payload</label>
+                                    <textarea rows="5" class="w-full bg-slate-950 border border-slate-800 rounded-lg px-3 py-2 text-slate-200 font-mono text-[10px] focus:outline-none focus:border-indigo-500 resize-none">h2. Detalle del Quiebre
+*Cliente:* Rancho San Martín
+*Intent:* price_complaint (Confianza 84%)
+*Sentimiento:* -0.89 (Frustración Crítica)
+
+h2. Recomendación de Diseño UX
+El bot repite la restricción técnica sin proveer caminos de bonificación o mitigación, gatillando el abandono definitivo.</textarea>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="pt-2">
+                            <button onclick="dispatchMcp()" class="w-full bg-indigo-600 hover:bg-indigo-500 text-xs font-semibold py-2.5 rounded-xl text-white shadow-lg shadow-indigo-500/25 transition-all flex items-center justify-center gap-2">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"/></svg>
+                                Aprobar y Despachar vía MCP
+                            </button>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <footer class="border-t border-slate-800 bg-slate-900/40 px-6 py-4 flex flex-col sm:flex-row sm:items-center sm:justify-between text-xs text-slate-400 gap-4">
+        <p>ConversaAI Observability Platform © 2026. Todos los derechos reservados para el manejo del corpus masivo.</p>
+    </footer>
+
+    <script>
+        // Manejador básico de Roles
+        function setRole(role) {
+            const btnProduct = document.getElementById('btn-role-product');
+            const btnAnalyst = document.getElementById('btn-role-analyst');
+            const panelAnalyst = document.getElementById('panel-control-analyst');
+            const actionAnalyst = document.getElementById('action-analyst-container');
+            
+            const badge = document.getElementById('badge-rol');
+            const title = document.getElementById('title-rol');
+            const desc = document.getElementById('desc-rol');
+
+            if(role === 'analyst') {
+                // Activar Estilos Analista
+                btnAnalyst.className = "flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all bg-indigo-600 text-white shadow";
+                btnProduct.className = "flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all text-slate-400 hover:text-slate-200";
+                panelAnalyst.classList.remove('hidden');
+                actionAnalyst.classList.remove('hidden');
+
+                badge.innerText = "Perfil: Ingeniero de Datos / MLOps";
+                badge.className = "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30";
+                title.innerText = "Gobernanza de Datos, Calibración de NLP e Ingestión de Corpus";
+                desc.innerText = "Gestiona la entrada mensual de logs de ConversaAI, evalúa la precisión multilingüe y limpia falsos positivos.";
+            } else {
+                // Activar Estilos Producto
+                btnProduct.className = "flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all bg-indigo-600 text-white shadow";
+                btnAnalyst.className = "flex items-center justify-center gap-2 px-4 py-2 text-xs font-semibold rounded-lg transition-all text-slate-400 hover:text-slate-200";
+                panelAnalyst.classList.add('hidden');
+                actionAnalyst.classList.add('hidden');
+
+                badge.innerText = "Perfil: Diseñador de Conversaciones & Producto";
+                badge.className = "text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full bg-slate-800 text-slate-400";
+                title.innerText = "Fricción de Flujos Conversacionales, Reducción de Abandono y Despacho MCP";
+                desc.innerText = "Identifica qué flujos del bot rompen la retención, inspecciona las sesiones críticas y aprueba el envío de correcciones.";
+            }
+        }
+
+        // Cambiador de Pestañas (Tabs)
+        function switchTab(tab) {
+            const viewDashboard = document.getElementById('view-dashboard');
+            const viewExplorer = document.getElementById('view-explorer');
+            const tabDashboard = document.getElementById('tab-dashboard');
+            const tabExplorer = document.getElementById('tab-explorer');
+
+            if(tab === 'dashboard') {
+                viewDashboard.classList.remove('hidden');
+                viewExplorer.classList.add('hidden');
+                tabDashboard.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors bg-slate-800 text-white border-l-2 border-indigo-500";
+                tabExplorer.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-slate-400 hover:bg-slate-800/50 hover:text-white";
+            } else {
+                viewDashboard.classList.add('hidden');
+                viewExplorer.classList.remove('hidden');
+                tabExplorer.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors bg-slate-800 text-white border-l-2 border-indigo-500";
+                tabDashboard.className = "w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-colors text-slate-400 hover:bg-slate-800/50 hover:text-white";
+            }
+        }
+
+        // Simulación de carga de datos para el analista
+        function simulateUpload() {
+            alert("Iniciando procesamiento del pipeline NLP distribuyendo cargas para el corpus bilingüe...");
+            setTimeout(() => {
+                document.getElementById('records-counter').innerText = "2,666,320";
+                document.getElementById('card-volume').innerText = "2,666,320";
+                alert("¡Éxito! Se añadieron 215,430 nuevos registros del mes y se mapearon a los nodos de fricción correspondientes.");
+            }, 500);
+        }
+
+        // Alerta de despacho MCP exitoso
+        function dispatchMcp() {
+            const title = document.getElementById('mcp-title').value;
+            alert("Despachando mediante MCP Link...\n\nAcción ejecutada con éxito sobre Jira Software. El backlog de sprint ha indexado el payload de frustración.");
+        }
+    </script>
+</body>
+</html>

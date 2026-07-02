@@ -1,0 +1,10 @@
+# Instalar con:
+# pip install psycopg2-binary --only-binary=:all:
+# pip install fastapi uvicorn python-dotenv pydantic supabase --only-binary=:all:
+
+fastapi
+uvicorn
+python-dotenv
+pydantic
+supabase
+psycopg2-binary
