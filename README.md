@@ -44,21 +44,30 @@ El equipo de producto medía tasas de resolución de tickets, pero no tenía vis
 
 ## Dashboard — hallazgos por página
 
-**1. Executive Summary** — 80 clientes, 37,5% churn rate, 26,7% retención lograda por el bot, sentimiento promedio 0,42. *Actitud del personal* e *insatisfacción* explican más del 60% del churn.
+**1. Executive Summary**  
 
 ![Resumen ejecutivo](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/2.jpg)
 
-**2. Chatbot Performance** — el bot identifica el motivo en 65-67% de los casos, pero eso no se traduce en retención: `retention_interest` y `queja_precio` tienen la peor tasa de retención pese a ser la señal más favorable. Muchas conversaciones ya arrancan con insatisfacción; las mejoras de plan retienen mejor que los mensajes personalizados.
+80 clientes, 37,5% churn rate, 26,7% retención lograda por el bot, sentimiento promedio 0,42. 
+*Actitud del personal* e *insatisfacción* explican más del 60% del churn.
+
+**2. Chatbot Performance** 
 
 ![Performance del chatbot](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/3.jpg)
 
-**3. Customer Profile & Churn** — los contratos mes a mes cancelan más que los anuales; *Analítica Pro* es el plan con más bajas absolutas. Cruzar contrato + plan con retención ayuda a priorizar, ya que no es lo mismo perder un cliente básico que uno premium.
+el bot identifica el motivo en 65-67% de los casos, pero eso no se traduce en retención: `retention_interest` y `queja_precio` tienen la peor tasa de retención pese a ser la señal más favorable. Muchas conversaciones ya arrancan con insatisfacción; las mejoras de plan retienen mejor que los mensajes personalizados.
+
+**3. Customer Profile & Churn** 
 
 ![Perfil del cliente](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/4.jpg)
+los contratos mes a mes cancelan más que los anuales; *Analítica Pro* es el plan con más bajas absolutas. Cruzar contrato + plan con retención ayuda a priorizar, ya que no es lo mismo perder un cliente básico que uno premium.
 
-**4. Support Analytics** — 217 tickets, 77,9% de resolución, 5,15 días promedio. *Facturación* y *solicitud de función* concentran volumen y peor resolución. El % de tickets sin cerrar es candidato directo a explicar parte del churn de las páginas anteriores.
+**4. Support Analytics**
 
 ![Soporte](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/5.jpg)
+
+217 tickets, 77,9% de resolución, 5,15 días promedio. *Facturación* y *solicitud de función* concentran volumen y peor resolución. El % de tickets sin cerrar es candidato directo a explicar parte del churn de las páginas anteriores.
+
 
 ---
 
@@ -168,4 +177,3 @@ docker run -p PUERTO:PUERTO nombre-servicio
 ## Licencia
 
 Proyecto educativo/portfolio. El dataset fue provisto en un ejercicio de simulación de No Country y no representa datos reales de clientes.
-
