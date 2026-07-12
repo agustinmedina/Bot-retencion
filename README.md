@@ -1,18 +1,98 @@
-# Bot-retención — Plataforma de análisis de churn (Ganadería SaaS)
+# GanadoChurn 🐄📊
+### Análisis de churn, sentimiento e intención para un SaaS de gestión ganadera
 
-Monorepo con tres servicios desplegados en **Railway** mediante **Docker**, orientado a analizar y predecir la cancelación (*churn*) de clientes de una plataforma SaaS de ganadería, con un bot conversacional de retención integrado.
+![Status](https://img.shields.io/badge/status-completado-success)
+![Stack](https://img.shields.io/badge/stack-Python%20%7C%20SQL%20%7C%20Power%20BI%20%7C%20FastAPI-blue)
+![Domain](https://img.shields.io/badge/dominio-AgTech%20%7C%20Data%20Analytics-orange)
 
-🔗 **Demo en vivo:** [frontganaderiadatos.up.railway.app](https://frontganaderiadatos.up.railway.app)
 
 ---
 
-## 📋 Descripción
+## Resumen
 
-El sistema centraliza la información de clientes, suscripciones, eventos de cancelación e interacciones de soporte de una empresa SaaS agropecuaria (gestión de rodeos, analítica ganadera), con un enfoque particular en el **bot de retención**: un chat automatizado que interviene cuando un cliente inicia el proceso de baja, identifica el motivo y intenta ofrecer una alternativa antes de perderlo.
+**GanadoChurn** analiza por qué los clientes de un SaaS de gestión ganadera cancelan su suscripción, en qué momento de la conversación con el bot de retención se pierde la oportunidad de retenerlos, y qué patrones de sentimiento e intención predicen el abandono.
 
-### Arquitectura
+El proyecto se originó como asignación de **No Country** (programa de simulación de proyectos reales de datos) sobre el dataset de churn de un SaaS de ganadería. A partir de ahí, desarrollé el análisis de sentimiento/intención y el dashboard que se documenta abajo.
 
-El proyecto está organizado como monorepo con tres servicios independientes:
+---
+
+## Problema
+
+El equipo de producto medía tasas de resolución de tickets, pero no tenía visibilidad sobre:
+- **Cuándo** dentro de la conversación el cliente se frustra al punto de cancelar.
+- **Qué intenciones** no logra resolver el bot pese a que el cliente da pie a una oferta.
+- Si existían **diferencias entre idiomas** (español/portugués) en el manejo de la conversación.
+
+---
+
+## Modelo de datos
+
+6 entidades en **PostgreSQL / Supabase**:
+
+| Tabla | Contenido |
+|---|---|
+| `clientes` | Provincia, tipo de productor, tipo de contrato, antigüedad |
+| `suscripciones` | Plan, ciclo de facturación, estado |
+| `eventos_churn` | Categoría y motivo de cancelación, si fue retenido, oferta usada |
+| `sesiones_chat` | Duración, sentimiento, si el bot identificó el motivo |
+| `mensajes_chat` | Mensaje a mensaje (bilingüe ES/PT), intención etiquetada por turno |
+| `interacciones_soporte` | Canal, tema, tiempo y estado de resolución |
+
+![Modelo de datos ERD](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/1.jpg)
+
+---
+
+## Dashboard — hallazgos por página
+
+**1. Executive Summary** — 80 clientes, 37,5% churn rate, 26,7% retención lograda por el bot, sentimiento promedio 0,42. *Actitud del personal* e *insatisfacción* explican más del 60% del churn.
+
+![Resumen ejecutivo](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/2.jpg)
+
+**2. Chatbot Performance** — el bot identifica el motivo en 65-67% de los casos, pero eso no se traduce en retención: `retention_interest` y `queja_precio` tienen la peor tasa de retención pese a ser la señal más favorable. Muchas conversaciones ya arrancan con insatisfacción; las mejoras de plan retienen mejor que los mensajes personalizados.
+
+![Performance del chatbot](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/3.jpg)
+
+**3. Customer Profile & Churn** — los contratos mes a mes cancelan más que los anuales; *Analítica Pro* es el plan con más bajas absolutas. Cruzar contrato + plan con retención ayuda a priorizar, ya que no es lo mismo perder un cliente básico que uno premium.
+
+![Perfil del cliente](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/4.jpg)
+
+**4. Support Analytics** — 217 tickets, 77,9% de resolución, 5,15 días promedio. *Facturación* y *solicitud de función* concentran volumen y peor resolución. El % de tickets sin cerrar es candidato directo a explicar parte del churn de las páginas anteriores.
+
+![Soporte](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/5.jpg)
+
+---
+
+## Recomendaciones
+
+1. Adelantar la intervención del bot al tramo 20-40% de la conversación.
+2. Reforzar el guion para `retention_interest` y `queja_precio`.
+3. Auditar el flujo del bot en portugués.
+4. Priorizar temas de soporte con peor resolución (facturación, solicitud de función).
+5. Priorizar ofertas de mejora de plan sobre mensajes genéricos.
+6. Cruzar soporte y chat: los tickets sin resolver probablemente explican parte del churn.
+
+> **Nota metodológica:** muestra de 30 sesiones / 345 mensajes / 80 clientes. Patrones direccionales — validar sobre el corpus mensual completo antes de tocar producción.
+
+---
+
+## Desarrollo y arquitectura técnica
+
+*(Detalle de implementación — el análisis de datos es el foco del proyecto; esta sección documenta cómo corre por debajo.)*
+
+### Pipeline de datos
+
+```
+                                       PostgreSQL (Supabase)
+                                                │
+                        ┌───────────────────────┼───────────────────────┐
+                        ▼                       ▼                       ▼
+              FastAPI (Railway)        Notebook de análisis      Power BI / Dashboard
+              Bot de retención         SQL + sentimiento/intención   6 páginas
+```
+
+### Arquitectura de servicios
+
+Monorepo con tres servicios independientes, cada uno en su propio contenedor **Docker** desplegado en **Railway**:
 
 | Servicio | Función |
 |---|---|
@@ -20,68 +100,41 @@ El proyecto está organizado como monorepo con tres servicios independientes:
 | **Frontend** | Interfaz web para visualizar clientes, suscripciones y métricas de retención |
 | **Dashboard de análisis** | Panel con indicadores de churn, efectividad del bot y salud de cuentas |
 
-Cada servicio corre en su propio contenedor **Docker**, desplegado como servicio independiente en **Railway**.
+### Stack técnico
 
----
-
-## 🗂️ Modelo de datos
-
-La base de datos se organiza en 6 tablas principales:
-
-### `clientes`
-Datos de cada cuenta SaaS: empresa, provincia, tipo de productor (Cría, Tambo, Engorde a Corral, Ganadería de Carne, Mixto), tamaño de rodeo, tipo de contrato, método de pago, antigüedad y segmento demográfico.
-
-### `suscripciones`
-Plan contratado por cada cliente (Analítica Básica / Estándar / Pro, Empresarial), cargo mensual, ciclo de facturación, fechas de inicio/fin, estado de actividad y consumo de datos (GB promedio mensual, cargos por datos extra).
-
-### `eventos_churn`
-Registro de cada cancelación: fecha, categoría y motivo del churn, si el cliente fue retenido, fecha de retención y oferta utilizada para retenerlo.
-
-### `sesiones_chat`
-Sesiones del **bot de retención**: vínculo al evento de churn correspondiente, duración, cantidad de mensajes, motivo identificado automáticamente por el bot, si el cliente fue retenido en esa sesión y un puntaje de sentimiento.
-
-### `mensajes_chat`
-Mensajes individuales de cada sesión (bot / cliente), con contenido original, idioma detectado, traducciones (español / portugués) y etiqueta de intención.
-
-### `interacciones_soporte`
-Historial de contactos de soporte por canal (chat, email, etc.), tema, si fue resuelto y días de resolución.
-
-**Relaciones principales:**
-```
-clientes 1─N suscripciones
-clientes 1─N eventos_churn
-clientes 1─N interacciones_soporte
-eventos_churn 1─1 sesiones_chat
-sesiones_chat 1─N mensajes_chat
-```
-
----
-
-## 🤖 Bot de retención
-
-El componente central del proyecto: cuando un cliente da señales de cancelar (o cancela efectivamente), se dispara una sesión de chat automatizada que:
-
-1. Conversa con el cliente para identificar el motivo real de la baja
-2. Clasifica la intención del mensaje (`etiqueta_intencion`)
-3. Evalúa el sentimiento de la conversación
-4. Ofrece una alternativa de retención cuando corresponde (cambio de plan, descuento, etc.)
-5. Registra si la retención fue exitosa
-
-Los mensajes se procesan en múltiples idiomas (español/portugués), reflejando la operación de la plataforma en distintos países de la región.
-
----
-
-## 🛠️ Stack técnico
-
-- **Backend:** Python
+- **Backend:** Python (FastAPI)
 - **Frontend:** Angular
 - **Base de datos:** PostgreSQL / Supabase
 - **Infraestructura:** Docker, Railway
-- **Análisis de datos:** pandas, SQL (window functions, CTEs)
+- **Análisis de datos:** pandas, SQL (window functions, CTEs), Power BI (DAX)
 
----
+🔗 **Demo en vivo:** [frontganaderiadatos.up.railway.app](https://frontganaderiadatos.up.railway.app)
 
-## 🚀 Despliegue
+### Estructura del repositorio
+
+```
+ganadochurn/
+├── data/churn_clientes_ganaderia_SaaS.xlsx
+├── sql/schema.sql
+├── bot_retencion/{main.py, requirements.txt}
+├── notebooks/analisis_sentimiento_intencion.ipynb
+├── dashboard/index.html
+├── screenshots/01-...08-...png
+└── README.md
+```
+
+### Cómo correrlo
+
+```bash
+git clone https://github.com/tu-usuario/ganadochurn.git
+cd ganadochurn/bot_retencion
+pip install -r requirements.txt
+uvicorn main:app --reload
+```
+
+`.env` necesario: `SUPABASE_URL`, `SUPABASE_KEY`, `DATABASE_URL`
+
+### Despliegue
 
 Cada uno de los tres servicios se despliega de forma independiente en Railway a partir de su propio `Dockerfile`.
 
@@ -95,18 +148,24 @@ docker run -p PUERTO:PUERTO nombre-servicio
 
 ---
 
-## 📊 Casos de uso analítico
+## Roadmap
 
-Este dataset permite responder preguntas como:
-
-- ¿Qué motivo de churn es más frecuente por tipo de productor o provincia?
-- ¿Qué tasa de éxito tiene el bot de retención según el motivo identificado?
-- ¿Existe correlación entre consumo de GB, plan contratado y probabilidad de churn?
-- ¿Cuántas interacciones de soporte previas anticipan una cancelación?
+- [ ] Escalar el análisis al corpus mensual completo (2M+ mensajes)
+- [ ] Migrar transformaciones a dbt
+- [ ] Automatizar el dashboard con n8n
+- [ ] Entrenar un clasificador de intención supervisado
 
 ---
 
-## 👤 Autor
+## Autor
 
-**Agustín Medina Soto**
-[GitHub](https://github.com/agustinmedina) · [LinkedIn](https://www.linkedin.com/in/agustin-medina-soto-a1a2a7132/) · [Portfolio](https://agustinmedina.github.io)
+**Agustín Medina Soto** — Ingeniería Agronómica (UNNE) en transición hacia Data Analytics, en la intersección entre agro y datos.
+
+📧 agustincorrientescapital@gmail.com · 🌐 [Portfolio](https://agustinmedina.github.io/) · 💼 [LinkedIn](https://www.linkedin.com/in/agustin-medina-soto-a1a2a7132/)
+
+---
+
+## Licencia
+
+Proyecto educativo/portfolio. El dataset fue provisto en un ejercicio de simulación de No Country y no representa datos reales de clientes.
+
