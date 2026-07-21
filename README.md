@@ -38,7 +38,79 @@ El equipo de producto medía tasas de resolución de tickets, pero no tenía vis
 | `mensajes_chat` | Mensaje a mensaje (bilingüe ES/PT), intención etiquetada por turno |
 | `interacciones_soporte` | Canal, tema, tiempo y estado de resolución |
 
-![Modelo de datos ERD](https://github.com/agustinmedina/Bot-retencion/blob/main/capturas/1.jpg)
+```mermaid
+erDiagram
+    clientes ||--o{ suscripciones : tiene
+    clientes ||--o{ interacciones_soporte : realiza
+    clientes ||--o{ eventos_churn : registra
+    clientes ||--o{ sesiones_chat : inicia
+    eventos_churn ||--o{ sesiones_chat : vincula
+    sesiones_chat ||--o{ mensajes_chat : contiene
+    clientes {
+        string id_cliente PK
+        string nombre_empresa
+        boolean es_senior
+        date fecha_alta
+        int meses_antiguedad
+        string metodo_pago
+        string plan_grupal
+        string provincia
+        string segmento_demografico
+    }
+    suscripciones {
+        string id_suscripcion PK
+        string id_cliente FK
+        string nombre_plan
+        decimal cargo_mensual
+        decimal cargos_datos_extra
+        string ciclo_facturacion
+        boolean esta_activo
+        date fecha_inicio
+        date fecha_fin
+        float gb_promedio_mensual
+    }
+    interacciones_soporte {
+        string id_interaccion PK
+        string id_cliente FK
+        string canal
+        string tema
+        int dias_resolucion
+        date fecha_interaccion
+        boolean resuelto
+    }
+    eventos_churn {
+        string id_churn PK
+        string id_cliente FK
+        string categoria_churn
+        string motivo_churn
+        string oferta_retencion
+        boolean fue_retenido
+        date fecha_churn
+        date fecha_retencion
+    }
+    sesiones_chat {
+        string id_sesion PK
+        string id_cliente FK
+        string id_churn FK
+        datetime hora_inicio
+        datetime hora_fin
+        boolean cliente_retenido
+        string motivo_identificado_bot
+        float puntaje_sentimiento
+        int total_mensajes
+    }
+    mensajes_chat {
+        string id_mensaje PK
+        string id_sesion FK
+        string contenido
+        string contenido_es
+        string contenido_pt
+        string etiqueta_intencion
+        datetime hora_envio
+        string idioma
+        string rol_remitente
+    }
+```
 
 ---
 
